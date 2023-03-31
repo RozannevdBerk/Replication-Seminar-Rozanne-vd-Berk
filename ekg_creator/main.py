@@ -2,7 +2,8 @@ import os
 
 from data_managers.interpreters import Interpreter
 from data_managers.semantic_header import SemanticHeader
-from database_managers.EventKnowledgeGraph import EventKnowledgeGraph, DatabaseConnection
+from database_managers.EventKnowledgeGraph import EventKnowledgeGraph
+from database_managers.db_connection import DatabaseConnection
 from data_managers.datastructures import ImportedDataStructures
 from utilities.performance_handling import Performance
 from database_managers import authentication
