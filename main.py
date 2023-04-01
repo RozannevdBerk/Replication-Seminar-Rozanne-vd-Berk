@@ -1,23 +1,26 @@
 import os
+from pathlib import Path
 
-from data_managers.interpreters import Interpreter
-from data_managers.semantic_header import SemanticHeader
-from database_managers.EventKnowledgeGraph import EventKnowledgeGraph
-from database_managers.db_connection import DatabaseConnection
-from data_managers.datastructures import ImportedDataStructures
-from utilities.performance_handling import Performance
-from database_managers import authentication
+from ekg_creator.data_managers.interpreters import Interpreter
+from ekg_creator.data_managers.semantic_header import SemanticHeader
+from ekg_creator.database_managers.EventKnowledgeGraph import EventKnowledgeGraph
+from ekg_creator.database_managers.db_connection import DatabaseConnection
+from ekg_creator.data_managers.datastructures import ImportedDataStructures
+from ekg_creator.utilities.performance_handling import Performance
+from ekg_creator.database_managers import authentication
 
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
 dataset_name = 'BoxProcess'
+semantic_header_path = Path(f'json_files/{dataset_name}.json')
 
 query_interpreter = Interpreter("Cypher")
-semantic_header = SemanticHeader.create_semantic_header(dataset_name, query_interpreter)
-perf_path = os.path.join("..", "perf", dataset_name, f"{dataset_name}Performance.csv")
+semantic_header = SemanticHeader.create_semantic_header(semantic_header_path, query_interpreter)
+perf_path = os.path.join("", "perf", dataset_name, f"{dataset_name}Performance.csv")
 number_of_steps = 34
 
-datastructures = ImportedDataStructures(dataset_name)
+ds_path = Path(f'json_files/{dataset_name}_DS.json')
+datastructures = ImportedDataStructures(ds_path)
 
 # several steps of import, each can be switch on/off
 step_clear_db = True
