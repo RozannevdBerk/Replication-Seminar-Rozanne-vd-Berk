@@ -7,6 +7,9 @@ Property Graph data model of graph databases. Missing case identifiers are infer
 All scripts and queries are licensed under LGPL v3.0, see LICENSE.
 Copyright information is provided within each Project.
 
+## EKG Construction
+The EKG construction is specified in `ekg-creator` and is submodule.
+Do not forget to run `git submodule init` and `git submodule update`!
 ## Requirements
 
 ### Neo4j
