@@ -47,7 +47,7 @@ How to use
 For data import & inference
 
 1. start the Neo4j server
-1. run main.py
+1. run `main.py`
 
 ## Projects
 
