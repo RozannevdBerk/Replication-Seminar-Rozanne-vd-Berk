@@ -148,70 +148,37 @@
       "activity_records.csv"
     ],
     "labels": [
-      "Activity"
+      "EntityType"
     ],
     "attributes": [
       {
-        "name": "ID",
+        "name": "name",
         "columns": [
           {
-            "name": "type",
-            "dtype": "str",
-            "mandatory": true
-          },
-          {
-            "name": "subtype",
-            "dtype": "str",
-            "mandatory": false
-          },
-          {
-            "name": "entity",
+            "name": "entityType",
             "dtype": "str",
             "mandatory": true
           }
         ],
-        "separator": "-",
         "mandatory": true,
         "is_primary_key": true
-      },
-
-      {
-        "name": "type",
-        "columns": [
-          {
-            "name": "type"
-          }
-        ],
-        "mandatory": true
-      },
-
-      {
-        "name": "subtype",
-        "columns": [
-          {
-            "name": "subtype"
-          }
-        ],
-        "mandatory": false
-      },
-      {
-        "name": "entity",
-        "columns": [
-          {
-            "name": "entity"
-          }
-        ],
-        "mandatory": true
-      },
-      {
-        "name": "activity",
-        "columns": [
-          {
-            "name": "activity"
-          }
-        ],
+      }
+    ]
+  },
+  {
+    "name": "activity_types",
+    "file_directory": "box_process_data\\",
+    "file_names": [
+      "activity_records.csv"
+    ],
+    "is_relationship": true,
+    "label": {
+      "column": {
+        "name": "label",
+        "dtype": "str",
         "mandatory": true
       }
+    }
     ]
   }
 ]
