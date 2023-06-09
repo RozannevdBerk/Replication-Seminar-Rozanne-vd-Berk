@@ -82,7 +82,8 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=False)
     graph.create_entity_relations_using_relations(relation_types=["AT_POS"])
     # rule d
-    graph.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box")
+    graph.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box",
+                                                                    relative_position_type="BatchPosition")
     # rule b
     graph.infer_items_propagate_downwards_one_level(entity_type="Box")
 
