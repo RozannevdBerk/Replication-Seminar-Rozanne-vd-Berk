@@ -34,6 +34,7 @@ Install [Neo4j](https://neo4j.com/download/):
 - `tabulate`
 - `tqdm`
 
+Hint: you can install all packages at once by running `pip install neo4j numpy pandas tabulate tqdm`.
 ## Get started
 
 ### Create a new graph database
