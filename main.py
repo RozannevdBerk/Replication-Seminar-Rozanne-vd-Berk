@@ -38,7 +38,9 @@ def create_graph_instance(perf: Performance) -> EventKnowledgeGraph:
     """
 
     return EventKnowledgeGraph(db_connection=db_connection, db_name=connection.user,
-                               event_tables=datastructures, semantic_header=semantic_header, perf=perf)
+                               specification_of_data_structures=datastructures, semantic_header=semantic_header,
+                               perf=perf,
+                               use_preprocessed_files=False)
 
 
 def clear_graph(graph: EventKnowledgeGraph, perf: Performance) -> None:
@@ -55,25 +57,27 @@ def clear_graph(graph: EventKnowledgeGraph, perf: Performance) -> None:
 
 
 def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
-    # region create EKG with event data and its context
-    # import the events, location and activity records from all sublogs in the graph with the corresponding labels
+    # Import the event data as Event nodes and location data as Location nodes and entity types from activity records as
+    # EntityTypes
     graph.import_data()
-    perf.finished_step(log_message=f"(:Event), (:Location) and (:Activity) nodes done")
+    perf.finished_step(log_message=f"(:Event), (:Location) and (:EntityType) nodes done")
 
     # for each entity, we add the entity nodes to graph and correlate them (if possible) to the corresponding events
-    graph.create_entities_by_nodes(node_label="Event")
+    graph.create_entities_by_nodes()
     perf.finished_step(log_message=f"(:Entity) nodes done")
 
-    graph.correlate_events_to_entities(node_label="Event")
+    graph.correlate_events_to_entities()
     perf.finished_step(log_message=f"[:CORR] edges done")
 
     # create the classes
     graph.create_classes()
-    perf.finished_step(log_message=f"(:Class) nodes done")
+    perf.finished_step(log_message=f"(:Activity) nodes done")
 
-    # create [:IS]. [:PART_OF] and [:AT] relation
+    # create [:PART_OF] and [:AT] relation
     graph.create_entity_relations_using_nodes()
     perf.finished_step(log_message=f"[:REL] edges done")
+
+    graph.create_entity_relations_using_relations(relation_types=["LOADS", "UNLOADS", "ACTS_ON"])
     # endregion
 
     # region Infer missing information
