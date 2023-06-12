@@ -7,10 +7,13 @@ Property Graph data model of graph databases. Missing case identifiers are infer
 All scripts and queries are licensed under LGPL v3.0, see LICENSE.
 Copyright information is provided within each Project.
 
-## EKG Construction
-The EKG construction is specified in `ekg-creator` and is a submodule.
+## Clone the repo and make sure to grab the submodules
+### Clone repository
+To clone `git clone https://github.com/Ava-S/ekg_inference.git`
 
-So do not forget to run `git submodule init` and `git submodule update`.
+### Submodule: EKG Construction
+The EKG construction is specified in `ekg-creator` and is a submodule.
+So you should run `git submodule update --init --recursive`.
 ## Requirements
 
 ### Neo4j
