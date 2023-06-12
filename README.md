@@ -42,7 +42,7 @@ Hint: you can install all packages at once by running `pip install neo4j numpy p
 - The scripts in this release assume password "12345678".
 - The scripts assume the server to be available at the default URL `bolt://localhost:7687`
   - You can modify this also in the script.
-- ensure to allocate enough memory to your database, advised: `dbms.memory.heap.max_size=5G`
+- ensure to allocate enough memory to your database, advised: `dbms.memory.heap.max_size=5G`, this can be changed by adjusting the settings. See [Modifying settings for the DBMS](https://neo4j.com/developer/neo4j-desktop/#desktop-DBMS-settings)
 - the script expects the `Neo4j APOC library` to be installed as a plugin, see https://neo4j.com/labs/apoc/
 
 How to use
