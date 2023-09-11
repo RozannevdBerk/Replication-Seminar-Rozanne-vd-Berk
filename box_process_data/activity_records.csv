@@ -1,4 +1,4 @@
-label,entityType,activity
+qualifier,entityType,activity
 load,Box,LoadFS
 unload,Box,UnloadFS
 load,Box,LoadSS
