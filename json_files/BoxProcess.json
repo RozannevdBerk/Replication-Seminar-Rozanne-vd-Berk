@@ -1,149 +1,175 @@
 {
   "name": "BoxProcess",
   "version": "1.0.0",
-  "entities": [
+  "records": [
+    "(record:EventRecord {timestamp, timestampVar, activity, eventId})",
+    "(record:ActivityRecord {activity})",
+    "(record:BoxRecord {boxId})",
+    "(record:BatchPositionRecord {batchPositionId})",
+    "(record:EquipmentRecord {equipmentId})",
+    "(record:LocationRecord {locationName})",
+    "(record:PartOfLocationRecord {partOfLocationName})",
+    "(record:EntityTypeRecord {entityType})",
+    "(record:QualifierRecord {qualifier})"
+  ],
+  "nodes": [
     {
-      "constructed_by_node": {
-        "node_label": "Event"
-      },
+      "type": "Event",
+      "constructor": [
+        {
+          "prevalent_record": "(record:EventRecord)",
+          "result": "(e:Event {timestamp:record.timestamp, timestampVar:record.timestampVar, activity:record.activity, eventId:record.eventId})"
+        }
+      ]
+    },
+    {
+      "type": "Activity",
+      "constructor": [
+        {
+          "prevalent_record": "(record:EventRecord)",
+          "result": "(a:Activity {activity:record.activity})",
+          "infer_observed": true
+        },
+        {
+          "prevalent_record": "(record:ActivityRecord)",
+          "result": "(a:Activity {activity:record.activity})",
+          "infer_observed": false
+        }
+      ]
+    },
+    {
       "type": "Box",
-      "labels": [
-        "Box"
+      "constructor": [
+        {
+          "prevalent_record": "(record:BoxRecord)",
+          "result": "(b:Entity:Box {sysId: record.boxId})",
+          "infer_corr_from_event_record": true
+        }
       ],
-      "primary_keys": [
-        "boxId"
-      ],
-      "entity_attributes": [
-        "boxId",
-        "batchPositionId"
-      ],
-      "df": true,
+      "infer_df": true,
       "include_label_in_df": true,
-      "corr": true,
       "merge_duplicate_df": true
     },
     {
-      "constructed_by_node": {
-        "node_label": "Event"
-      },
       "type": "BatchPosition",
-      "labels": [
-        "BatchPosition"
+      "constructor": [
+        {
+          "prevalent_record": "(record:BatchPositionRecord)",
+          "result": "(bp:Entity:BatchPosition {sysId: record.batchPositionId})",
+          "infer_corr_from_event_record": true
+        }
       ],
-      "primary_keys": [
-        "batchPositionId"
+      "infer_df": false
+    },
+    {
+      "type": "Equipment",
+      "constructor": [
+        {
+          "prevalent_record": "(record:EquipmentRecord)",
+          "result": "(eq:Entity:Equipment {sysId: record.equipmentId})",
+          "infer_corr_from_event_record": true
+        }
       ],
-      "entity_attributes": [
-        "batchPositionId"
-      ],
-      "df": false,
+      "infer_df": true,
       "include_label_in_df": true,
-      "corr": true,
       "merge_duplicate_df": true
     },
     {
-      "constructed_by_node": {
-        "node_label": "Event"
-      },
-      "type": "Equipment",
-      "labels": [
-        "Equipment"
-      ],
-      "primary_keys": [
-        "equipment"
-      ],
-      "entity_attributes": [
-        "equipmentId"
-      ],
-      "df": true,
-      "include_label_in_df": true,
-      "corr": true,
-      "merge_duplicate_df": true
+      "type": "Location",
+      "constructor": [
+        {
+          "prevalent_record": "(record:PartOfLocationRecord)",
+          "result": "(eq:Location:SuperLocation {sysId: record.partOfLocationName})"
+        },
+        {
+          "prevalent_record": "(record:LocationRecord)",
+          "result": "(eq:Location {sysId: record.locationName})"
+        }
+      ]
+    },
+    {
+      "type": "EntityType",
+      "constructor": [
+        {
+          "prevalent_record": "(record:EntityTypeRecord)",
+          "result": "(eq:EntityType {name: record.entityType})"
+        }
+      ]
+    },
+    {
+      "type": "QualifierRecord",
+      "constructor": [
+        {
+          "prevalent_record": "(record:QualifierRecord)",
+          "result": "(eq:Relation:Qualifier {qualifier: record.qualifier})"
+        }
+      ]
     }
   ],
   "relations": [
     {
-      "type": "AT",
-      "constructed_by_nodes": {
-        "from_node_label": "Location",
-        "to_node_label": "Activity",
-        "primary_key": "name",
-        "foreign_key": "activity",
-        "reversed": true
-      }
-    },
-    {
       "type": "PART_OF",
-      "constructed_by_nodes": {
-        "from_node_label": "Location",
-        "to_node_label": "Location",
-        "primary_key": "name",
-        "foreign_key": "partOf"
+      "constructor": {
+        "prevalent_record": "(record:LocationRecord:PartOfLocationRecord)",
+        "from_node": "(l1: Location)",
+        "to_node": "(l2: SuperLocation)",
+        "result": "(l1) - [:PART_OF] -> (l2)"
       }
     },
     {
-      "type": "LOADS",
-      "constructed_by_relations": {
-        "antecedents": [
-          "(a:Activity WHERE a.name = 'LoadAL' OR a.name = 'LoadFS' OR a.name = 'LoadSS')",
-          "(et:EntityType {name: 'Box'})"
-        ],
-        "consequent": "(a:Activity) - [:LOADS] -> (et:EntityType)"
+      "type": "AT",
+      "constructor": {
+        "prevalent_record": "(record:ActivityRecord:LocationRecord)",
+        "from_node": "(a: Activity)",
+        "to_node": "(l: Location)",
+        "result": "(a) - [:AT] -> (l)"
       }
     },
     {
-      "type": "UNLOADS",
-      "constructed_by_relations": {
-        "antecedents": [
-          "(a:Activity WHERE a.name = 'UnloadAL' OR a.name = 'UnloadFS' OR a.name = 'UnloadSS')",
-          "(et:EntityType {name: 'Box'})"
-        ],
-        "consequent": "(a:Activity) - [:UNLOADS] -> (et:EntityType)"
+      "type": "FROM",
+      "constructor": {
+        "prevalent_record": "(record:ActivityRecord:QualifierRecord)",
+        "from_node": "(a: Activity)",
+        "to_node": "(q: Qualifier)",
+        "result": "(a) - [:FROM] -> (q)"
       }
     },
     {
-      "type": "ACTS_ON",
-      "constructed_by_relations": {
-        "antecedents": [
-          "(a:Activity WHERE a.name = 'Fill' OR a.name = 'Seal')",
-          "(et:EntityType {name: 'Box'})"
-        ],
-        "consequent": "(a:Activity) - [:ACTS_ON] -> (et:EntityType)"
+      "type": "TO",
+      "constructor": {
+        "prevalent_record": "(record:EntityTypeRecord:QualifierRecord)",
+        "from_node": "(q: Qualifier)",
+        "to_node": "(et: EntityType)",
+        "result": "(q) - [:TO] -> (et)"
       }
     },
     {
       "type": "AT_POS",
-      "constructed_by_relations": {
-        "antecedents": [
-          "(e:Event) - [:CORR] -> (b:Box)",
-          "(e) - [:CORR] -> (bp:BatchPosition)"
+      "constructor": {
+        "relations": [
+          "MATCH (e:Event) - [:CORR] -> (b:Box)",
+          "MATCH (e) - [:CORR] -> (bp:BatchPosition)"
         ],
-        "consequent": "(b:Box) - [:AT_POS] -> (bp:BatchPosition)"
+        "from_node": "(b:Box)",
+        "to_node": "(bp:BatchPosition)",
+        "result": "(b) - [:AT_POS] -> (bp)",
+        "model_as_node": false,
+        "infer_corr_from_reified_parents": false
       }
     },
     {
       "type": "CORR",
-      "include_properties": false,
-      "constructed_by_relations": {
-        "antecedents": [
-          "(e:Event) - [:CORR] -> (b:Box)",
-          "(b) - [:AT_POS] -> (bp:BatchPosition)"
+      "constructor": {
+        "relations": [
+          "MATCH (e:Event) - [:CORR] -> (b:Box)",
+          "MATCH (b) - [:AT_POS] -> (bp:BatchPosition)"
         ],
-        "consequent": "(e:Event) - [:CORR] -> (bp:BatchPosition)"
+        "from_node": "(e:Event)",
+        "to_node": "(bp:BatchPosition)",
+        "result": "(e) - [:CORR] -> (bp)",
+        "model_as_node": false,
+        "infer_corr_from_reified_parents": false
       }
     }
-  ],
-  "classes": [
-    {
-      "label": "Activity",
-      "aggregate_from_nodes": "Event",
-      "class_identifiers": [
-        "activity"
-      ]
-    }
-  ],
-  "log": {
-    "include": false,
-    "has": true
-  }
+  ]
 }

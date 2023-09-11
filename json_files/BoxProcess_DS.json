@@ -6,7 +6,10 @@
       "event_data.csv"
     ],
     "labels": [
-      "Event"
+      "EventRecord",
+      "BoxRecord",
+      "BatchPositionRecord",
+      "EquipmentRecord"
     ],
     "attributes": [
       {
@@ -17,7 +20,7 @@
             "dtype": "string"
           }
         ],
-        "mandatory": true
+        "optional":false
       },
       {
         "name": "activity",
@@ -26,7 +29,7 @@
             "name": "activity"
           }
         ],
-        "mandatory": true
+        "optional": false
       },
       {
         "name": "timestampVar",
@@ -35,7 +38,7 @@
             "name": "timestampVar"
           }
         ],
-        "mandatory": true
+        "optional": false
       },
       {
         "name": "boxId",
@@ -44,7 +47,7 @@
             "name": "box"
           }
         ],
-        "mandatory": false
+        "optional":true
       },
       {
         "name": "batchPositionId",
@@ -53,16 +56,16 @@
             "name": "batchPosition"
           }
         ],
-        "mandatory": true
+        "optional": true
       },
       {
-        "name": "equipment",
+        "name": "equipmentId",
         "columns": [
           {
             "name": "equipment"
           }
         ],
-        "mandatory": true
+        "optional": false
       },
       {
         "name": "timestamp",
@@ -75,7 +78,7 @@
           "format": "d/M/y H:m:s",
           "convert_to": "ISO_DATE_TIME"
         },
-        "mandatory": true
+        "optional": false
       }
     ]
   },
@@ -86,29 +89,30 @@
       "location_records.csv"
     ],
     "labels": [
-      "Location"
+      "LocationRecord",
+      "ActivityRecord",
+      "PartOfLocationRecord"
     ],
     "attributes": [
       {
-        "name": "name",
+        "name": "locationName",
         "columns": [
           {
             "name": "name",
             "dtype": "str"
           }
         ],
-        "is_primary_key": true,
-        "mandatory": true
+        "optional": false
       },
       {
-        "name": "partOf",
+        "name": "partOfLocationName",
         "columns": [
           {
             "name": "partOf",
             "dtype": "str"
           }
         ],
-        "mandatory": false
+        "optional": true
       },
       {
         "name": "activity",
@@ -117,7 +121,7 @@
             "name": "activity"
           }
         ],
-        "mandatory": true
+        "optional": false
       }
     ]
   },
@@ -128,20 +132,40 @@
       "activity_records.csv"
     ],
     "labels": [
-      "EntityType"
+      "EntityTypeRecord",
+      "ActivityRecord",
+      "QualifierRecord"
     ],
     "attributes": [
       {
-        "name": "name",
+        "name": "entityType",
         "columns": [
           {
             "name": "entityType",
-            "dtype": "str",
-            "mandatory": true
+            "dtype": "str"
           }
         ],
-        "mandatory": true,
-        "is_primary_key": true
+        "optional": false
+      },
+      {
+        "name": "activity",
+        "columns": [
+          {
+            "name": "activity",
+            "dtype": "str"
+          }
+        ],
+        "optional": false
+      },
+      {
+        "name": "qualifier",
+        "columns": [
+          {
+            "name": "qualifier",
+            "dtype": "str"
+          }
+        ],
+        "optional": false
       }
     ]
   }
