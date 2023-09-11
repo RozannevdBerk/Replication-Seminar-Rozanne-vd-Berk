@@ -1,102 +1,43 @@
 import os
+from datetime import datetime
 from pathlib import Path
 
-from ekg_creator.data_managers.interpreters import Interpreter
-from ekg_creator.data_managers.semantic_header import SemanticHeader
-from ekg_creator.database_managers.EventKnowledgeGraph import EventKnowledgeGraph
-from ekg_creator.database_managers.db_connection import DatabaseConnection
-from ekg_creator.data_managers.datastructures import ImportedDataStructures
-from ekg_creator.utilities.performance_handling import Performance
-from ekg_creator.database_managers import authentication
+from promg import SemanticHeader, OcedPg
+from promg import DatabaseConnection
+from promg import authentication
+from promg import DatasetDescriptions
+
+from promg import Performance
+from promg.modules.db_management import DBManagement
+from promg.modules.inference_engine import InferenceEngine
+from promg.modules.task_identification import TaskIdentification
+from promg.modules.process_discovery import ProcessDiscovery
+
+# several steps of import, each can be switch on/off
+from colorama import Fore
+
+from custom_modules.custom_modules.collapse_nodes import CollapseNodes
 
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
 dataset_name = 'BoxProcess'
+use_sample = False
+batch_size = 10000
+use_preprocessed_files = False
+
 semantic_header_path = Path(f'json_files/{dataset_name}.json')
 
-query_interpreter = Interpreter("Cypher")
-semantic_header = SemanticHeader.create_semantic_header(semantic_header_path, query_interpreter)
-perf_path = os.path.join("", "perf", dataset_name, f"{dataset_name}Performance.csv")
-number_of_steps = 34
+semantic_header = SemanticHeader.create_semantic_header(semantic_header_path)
+perf_path = os.path.join("..", "perf", dataset_name, f"{dataset_name}_{'sample_' * use_sample}Performance.csv")
 
 ds_path = Path(f'json_files/{dataset_name}_DS.json')
-datastructures = ImportedDataStructures(ds_path)
+dataset_descriptions = DatasetDescriptions(ds_path)
 
 # several steps of import, each can be switch on/off
 step_clear_db = True
 step_populate_graph = True
 verbose = False  # print the used queries
-
-db_connection = DatabaseConnection(db_name=connection.user, uri=connection.uri, user=connection.user,
-                                   password=connection.password, verbose=verbose)
-
-
-def create_graph_instance(perf: Performance) -> EventKnowledgeGraph:
-    """
-    Creates an instance of an EventKnowledgeGraph
-    @return: returns an EventKnowledgeGraph
-    """
-
-    return EventKnowledgeGraph(db_connection=db_connection, db_name=connection.user,
-                               specification_of_data_structures=datastructures, semantic_header=semantic_header,
-                               perf=perf,
-                               use_preprocessed_files=False)
-
-
-def clear_graph(graph: EventKnowledgeGraph, perf: Performance) -> None:
-    """
-    # delete all nodes and relations in the graph to start fresh
-    @param graph: EventKnowledgeGraph
-    @param perf: Performance
-    @return: None
-    """
-
-    print("Clearing DB...")
-    graph.clear_db()
-    perf.finished_step(log_message=f"Cleared DB")
-
-
-def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
-    # Import the event data as Event nodes and location data as Location nodes and entity types from activity records as
-    # EntityTypes
-    graph.import_data()
-    perf.finished_step(log_message=f"(:Event), (:Location) and (:EntityType) nodes done")
-
-    # for each entity, we add the entity nodes to graph and correlate them (if possible) to the corresponding events
-    graph.create_entities_by_nodes()
-    perf.finished_step(log_message=f"(:Entity) nodes done")
-
-    graph.correlate_events_to_entities()
-    perf.finished_step(log_message=f"[:CORR] edges done")
-
-    # create the classes
-    graph.create_classes()
-    perf.finished_step(log_message=f"(:Activity) nodes done")
-
-    # create [:PART_OF] and [:AT] relation
-    graph.create_entity_relations_using_nodes()
-    perf.finished_step(log_message=f"[:REL] edges done")
-
-    graph.create_entity_relations_using_relations(relation_types=["LOADS", "UNLOADS", "ACTS_ON"])
-    # endregion
-
-    # region Infer missing information
-    # rule c, both for preceding load events and succeeding unload events
-    graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=True)
-    graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=False)
-    graph.create_entity_relations_using_relations(relation_types=["AT_POS"])
-    # rule d
-    graph.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box",
-                                                                    relative_position_type="BatchPosition")
-    # rule b
-    graph.infer_items_propagate_downwards_one_level(entity_type="Box")
-
-    # endregion
-
-    # region Complete EKG creation, add DF relations after missing correlations are inferred
-    graph.create_df_edges()
-    perf.finished_step(log_message=f"[:DF] edges done")
-    # endregion
+credentials_key = authentication.Connections.LOCAL
 
 
 def main() -> None:
@@ -104,21 +45,49 @@ def main() -> None:
     Main function, read all the logs, clear and create the graph, perform checks
     @return: None
     """
+    print("Started at =", datetime.now().strftime("%H:%M:%S"))
 
-    # performance class to measure performance
-    perf = Performance(perf_path, number_of_steps=number_of_steps)
-    graph = create_graph_instance(perf)
+    db_connection = DatabaseConnection.set_up_connection_using_key(key=credentials_key,
+                                                                   verbose=verbose)
+    performance = Performance.set_up_performance(dataset_name=dataset_name,
+                                                 use_sample=use_sample)
+    db_manager = DBManagement()
 
     if step_clear_db:
-        clear_graph(graph=graph, perf=perf)
+        print(Fore.RED + 'Clearing the database.' + Fore.RESET)
+        db_manager.clear_db(replace=True)
+        db_manager.set_constraints()
 
     if step_populate_graph:
-        populate_graph(graph=graph, perf=perf)
+        if use_preprocessed_files:
+            print(Fore.RED + '💾 Preloaded files are used!' + Fore.RESET)
+        else:
+            print(Fore.RED + '📝 Importing and creating files' + Fore.RESET)
 
-    perf.finish()
-    perf.save()
+        oced_pg = OcedPg(dataset_descriptions=dataset_descriptions,
+                         use_sample=use_sample,
+                         use_preprocessed_files=use_preprocessed_files)
+        oced_pg.load_and_transform()
 
-    graph.print_statistics()
+        collapse_nodes = CollapseNodes()
+        collapse_nodes.collapse_nodes()
+
+        inference = InferenceEngine()
+        # region Infer missing information
+        # rule c, both for preceding load events and succeeding unload events
+        inference.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=True)
+        inference.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=False)
+        oced_pg.create_relations(relation_types=["AT_POS"])
+        # rule d
+        inference.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box",
+                                                                            relative_position_type="BatchPosition")
+        # rule b
+        inference.infer_items_propagate_downwards_one_level(entity_type="Box")
+
+        oced_pg.create_df_edges()
+
+    performance.finish_and_save()
+    db_manager.print_statistics()
 
     db_connection.close_connection()
 
