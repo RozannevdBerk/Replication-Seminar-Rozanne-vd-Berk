@@ -1,4 +1,4 @@
-# ‼️ This repository has moved to the [PromG](https://github.com/PromG-dev/promg-inference) environment.
+# ‼️ This repository has moved to [PromG](https://github.com/PromG-dev/promg-inference).
 This project will be maintained over there and is no longer supported here.
 
 ---
