@@ -1,6 +1,7 @@
 # ‼️ This repository has moved to the [PromG](https://github.com/PromG-dev/promg-inference) environment.
 This project will be maintained over there and is no longer supported here.
 
+---
 
 # Using Graph Databases to Infer Missing Case Identifiers in Event Data
 
