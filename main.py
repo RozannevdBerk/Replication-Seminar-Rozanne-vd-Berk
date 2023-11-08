@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import sys
+from datetime import datetime
 
 from ekg_creator.data_managers.interpreters import Interpreter
 from ekg_creator.data_managers.semantic_header import SemanticHeader
@@ -10,10 +11,12 @@ from ekg_creator.data_managers.datastructures import ImportedDataStructures
 from ekg_creator.utilities.performance_handling import Performance
 from ekg_creator.database_managers import authentication
 
+from help_functions import *
+
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
 # region ADDED IN REPLICATION
-allowed_args = ['Short']
+allowed_args = ['Short', 'ExampleCheck']
 
 if len(sys.argv) == 1:
     argv = ''
@@ -21,6 +24,15 @@ elif sys.argv[1] not in allowed_args:
     raise Exception(f"{sys.argv[1]} not recognized as valid argument, please choose from the following: {allowed_args}")
 else:
     argv = sys.argv[1]
+
+if argv=='ExampleCheck':
+    relations = (('LoadAL','LoadFS'),
+                 ('LoadFS','Fill'),
+                 ('Fill','UnloadFS'),
+                 ('UnloadFS','LoadSS'),
+                 ('LoadSS','Seal'),
+                 ('Seal','UnloadSS'),
+                 ('UnloadSS','UnloadAL'))
 # endregion
 
 dataset_name = f'BoxProcess{argv}'
@@ -29,7 +41,7 @@ semantic_header_path = Path(f'json_files/{dataset_name}.json')
 query_interpreter = Interpreter("Cypher")
 semantic_header = SemanticHeader.create_semantic_header(semantic_header_path, query_interpreter)
 perf_path = os.path.join("", "perf", dataset_name, f"{dataset_name}Performance.csv")
-number_of_steps = 34
+number_of_steps = None
 
 ds_path = Path(f'json_files/{dataset_name}_DS.json')
 datastructures = ImportedDataStructures(ds_path)
@@ -92,6 +104,11 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     graph.create_entity_relations_using_relations(relation_types=["LOADS", "UNLOADS", "ACTS_ON"])
     # endregion
 
+    # region ADDED IN REPLICATION: Add DF_A relationships
+    if argv=='ExampleCheck':
+        add_df_a_relations(db_connection, relations)
+    # endregion
+
     if argv!='Short':
         # region Infer missing information
         # rule c, both for preceding load events and succeeding unload events
@@ -111,13 +128,18 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
         perf.finished_step(log_message=f"[:DF] edges done")
         # endregion
 
+        if argv=='ExampleCheck':
+            # region compute percentage of complete traces and save in results.txt
+            save_evaluation(db_connection,f"{argv}, {datetime.now()}")
+            # endregion
+
 
 def main() -> None:
     """
     Main function, read all the logs, clear and create the graph, perform checks
     @return: None
     """
-
+    start_time = datetime.now()
     # performance class to measure performance
     perf = Performance(perf_path, number_of_steps=number_of_steps)
     graph = create_graph_instance(perf)
@@ -134,6 +156,13 @@ def main() -> None:
     graph.print_statistics()
 
     db_connection.close_connection()
+
+    end_time = datetime.now()
+
+    if argv=='Short':
+        save_runtime(start_time, end_time, f"{argv}, {datetime.now()}")
+    else:
+        save_runtime(start_time, end_time)
 
 
 if __name__ == "__main__":
