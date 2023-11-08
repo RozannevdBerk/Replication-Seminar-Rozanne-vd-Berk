@@ -1,0 +1,6 @@
+idx,eventId,activity,timestamp,timestampVar,box,equipment,log
+8,e9,LoadSS,24/03/2023 10:17:00,t8,,3012,Running Example
+9,e10,Seal,24/03/2023 10:20:00,t9,b1,3012,Running Example
+10,e11,Fill,24/03/2023 10:22:00,t10,,3012,Running Example
+11,e12,UnloadFS,24/03/2023 10:23:00,t11,,3012,Running Example
+12,e13,UnloadSS,24/03/2023 10:24:00,t12,,3012,Running Example

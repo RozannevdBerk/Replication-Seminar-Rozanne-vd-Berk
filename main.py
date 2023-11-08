@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 
 from ekg_creator.data_managers.interpreters import Interpreter
 from ekg_creator.data_managers.semantic_header import SemanticHeader
@@ -11,7 +12,18 @@ from ekg_creator.database_managers import authentication
 
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
-dataset_name = 'BoxProcess'
+# region ADDED IN REPLICATION
+allowed_args = ['Short']
+
+if len(sys.argv) == 1:
+    argv = ''
+elif sys.argv[1] not in allowed_args:
+    raise Exception(f"{sys.argv[1]} not recognized as valid argument, please choose from the following: {allowed_args}")
+else:
+    argv = sys.argv[1]
+# endregion
+
+dataset_name = f'BoxProcess{argv}'
 semantic_header_path = Path(f'json_files/{dataset_name}.json')
 
 query_interpreter = Interpreter("Cypher")
@@ -58,7 +70,7 @@ def clear_graph(graph: EventKnowledgeGraph, perf: Performance) -> None:
 
 def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     # Import the event data as Event nodes and location data as Location nodes and entity types from activity records as
-    # EntityTypes
+    # region EntityTypes
     graph.import_data()
     perf.finished_step(log_message=f"(:Event), (:Location) and (:EntityType) nodes done")
 
@@ -80,23 +92,24 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     graph.create_entity_relations_using_relations(relation_types=["LOADS", "UNLOADS", "ACTS_ON"])
     # endregion
 
-    # region Infer missing information
-    # rule c, both for preceding load events and succeeding unload events
-    graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=True)
-    graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=False)
-    graph.create_entity_relations_using_relations(relation_types=["AT_POS"])
-    # rule d
-    graph.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box",
-                                                                    relative_position_type="BatchPosition")
-    # rule b
-    graph.infer_items_propagate_downwards_one_level(entity_type="Box")
+    if argv!='Short':
+        # region Infer missing information
+        # rule c, both for preceding load events and succeeding unload events
+        graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=True)
+        graph.infer_items_propagate_upwards_multiple_levels(entity_type="Box", is_load=False)
+        graph.create_entity_relations_using_relations(relation_types=["AT_POS"])
+        # rule d
+        graph.infer_items_propagate_downwards_multiple_level_w_batching(entity_type="Box",
+                                                                        relative_position_type="BatchPosition")
+        # rule b
+        graph.infer_items_propagate_downwards_one_level(entity_type="Box")
 
-    # endregion
+        # endregion
 
-    # region Complete EKG creation, add DF relations after missing correlations are inferred
-    graph.create_df_edges()
-    perf.finished_step(log_message=f"[:DF] edges done")
-    # endregion
+        # region Complete EKG creation, add DF relations after missing correlations are inferred
+        graph.create_df_edges()
+        perf.finished_step(log_message=f"[:DF] edges done")
+        # endregion
 
 
 def main() -> None:
