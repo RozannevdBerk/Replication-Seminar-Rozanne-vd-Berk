@@ -23,10 +23,7 @@ allowed_args = ['Short',
                 'NoiseCheck2',
                 'NoiseCheck3',
                 'NoiseCheck4',
-                'NoiseCheck5',
-                'NoiseCheck6',
-                'NoiseCheck7',
-                'NoiseCheck8']
+                'NoiseCheck5']
 
 if len(sys.argv) == 1:
     argv = ''

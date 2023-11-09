@@ -7,7 +7,6 @@ This codebase is a copy+extension of the codebase created by Swevels et al. for 
 - Create a new project or select an existing one
 - Create a local DBMS (Select Project->Click 'Add'->Click 'Local DBMS')
 - Select any name, but make sure the password is set to '12345678'
-- Ensure enough memory is available by going to settings (Click the three dots next to 'open'->Click 'settings'). Find the line `dbms.memory.heap.max_size=1G` and change `1G` to `5G`
 - Add APOC plug-in to the DBMS (select DBMS->Click 'Plugins'->Click 'APOC'->Click 'Install')
 - Click 'start' to start the DBMS
 - \[optional sanity check\] Click 'open' and check in the Neo4J browser for the message "You are connected as user `neo4j` to `bolt://localhost:7687`"

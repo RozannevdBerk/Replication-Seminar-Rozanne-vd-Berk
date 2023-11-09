@@ -75,7 +75,7 @@
           "format": "d/M/y H:m:s",
           "convert_to": "ISO_DATE_TIME"
         },
-        "mandatory": true
+        "mandatory": false
       }
     ]
   },
