@@ -11,12 +11,12 @@ from ekg_creator.data_managers.datastructures import ImportedDataStructures
 from ekg_creator.utilities.performance_handling import Performance
 from ekg_creator.database_managers import authentication
 
-from help_functions import *
+import help_functions as f
 
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
 # region ADDED IN REPLICATION
-allowed_args = ['Short', 'ExampleCheck']
+allowed_args = ['Short', 'ExampleCheck','PerformanceCheck']
 
 if len(sys.argv) == 1:
     argv = ''
@@ -31,6 +31,17 @@ if argv=='ExampleCheck':
                  ('Fill','UnloadFS'),
                  ('UnloadFS','LoadSS'),
                  ('LoadSS','Seal'),
+                 ('Seal','UnloadSS'),
+                 ('UnloadSS','UnloadAL'))
+    
+if argv=='PerformanceCheck':
+    relations = (('LoadAL','LoadFS'),
+                 ('LoadFS','Open'),
+                 ('Open','Fill'),
+                 ('Fill','UnloadFS'),
+                 ('UnloadFS','LoadSS'),
+                 ('LoadSS','Close'),
+                 ('Close','Seal'),
                  ('Seal','UnloadSS'),
                  ('UnloadSS','UnloadAL'))
 # endregion
@@ -104,11 +115,6 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
     graph.create_entity_relations_using_relations(relation_types=["LOADS", "UNLOADS", "ACTS_ON"])
     # endregion
 
-    # region ADDED IN REPLICATION: Add DF_A relationships
-    if argv=='ExampleCheck':
-        add_df_a_relations(db_connection, relations)
-    # endregion
-
     if argv!='Short':
         # region Infer missing information
         # rule c, both for preceding load events and succeeding unload events
@@ -128,10 +134,11 @@ def populate_graph(graph: EventKnowledgeGraph, perf: Performance):
         perf.finished_step(log_message=f"[:DF] edges done")
         # endregion
 
-        if argv=='ExampleCheck':
-            # region compute percentage of complete traces and save in results.txt
-            save_evaluation(db_connection,f"{argv}, {datetime.now()}")
-            # endregion
+        # region ADDED IN REPLICATION, apply evaluation and save to result.txt
+        if argv!='':
+            f.add_df_a_relations(db_connection, relations)
+            f.save_evaluation(db_connection,f"{argv}, {datetime.now()}")
+        # endregion
 
 
 def main() -> None:
@@ -160,9 +167,9 @@ def main() -> None:
     end_time = datetime.now()
 
     if argv=='Short':
-        save_runtime(start_time, end_time, f"{argv}, {datetime.now()}")
-    else:
-        save_runtime(start_time, end_time)
+        f.save_runtime(start_time, end_time, f"{argv}, {datetime.now()}")
+    elif argv!='':
+        f.save_runtime(start_time, end_time)
 
 
 if __name__ == "__main__":

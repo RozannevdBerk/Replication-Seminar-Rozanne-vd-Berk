@@ -1,0 +1,11 @@
+name,partOf,activity
+FillStation,AssemblyLine,Open
+FillStation,AssemblyLine,Fill
+FillStation,AssemblyLine,LoadFS
+FillStation,AssemblyLine,UnloadFS
+SealStation,AssemblyLine,Close
+SealStation,AssemblyLine,Seal
+SealStation,AssemblyLine,LoadSS
+SealStation,AssemblyLine,UnloadSS
+AssemblyLine,,LoadAL
+AssemblyLine,,UnloadAL
