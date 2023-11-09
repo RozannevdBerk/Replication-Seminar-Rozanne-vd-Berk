@@ -16,7 +16,17 @@ import help_functions as f
 connection = authentication.connections_map[authentication.Connections.LOCAL]
 
 # region ADDED IN REPLICATION
-allowed_args = ['Short', 'ExampleCheck','PerformanceCheck']
+allowed_args = ['Short', 
+                'ExampleCheck',
+                'PerformanceCheck',
+                'NoiseCheck1',
+                'NoiseCheck2',
+                'NoiseCheck3',
+                'NoiseCheck4',
+                'NoiseCheck5',
+                'NoiseCheck6',
+                'NoiseCheck7',
+                'NoiseCheck8']
 
 if len(sys.argv) == 1:
     argv = ''
@@ -34,7 +44,7 @@ if argv=='ExampleCheck':
                  ('Seal','UnloadSS'),
                  ('UnloadSS','UnloadAL'))
     
-if argv=='PerformanceCheck':
+if argv=='PerformanceCheck' or argv.startswith('NoiseCheck'):
     relations = (('LoadAL','LoadFS'),
                  ('LoadFS','Open'),
                  ('Open','Fill'),

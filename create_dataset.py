@@ -4,7 +4,6 @@ import random
 from datetime import datetime,timedelta
 import time
 
-# region Creating event data based on extended process
 df_lock = threading.Lock()
 FS_lock = threading.Lock()
 SS_lock = threading.Lock()
@@ -75,6 +74,3 @@ event_df.loc[:,'timestampVar'] = [f't{i}' for i in range(1,len(event_df)+1)]
 event_df.loc[:,'eventId'] = [f'e{i}' for i in range(1,len(event_df)+1)]
 
 event_df.to_csv('./box_process_data/event_data_extended.csv', header=True, index=True, index_label='idx')
-
-# endregion
-
