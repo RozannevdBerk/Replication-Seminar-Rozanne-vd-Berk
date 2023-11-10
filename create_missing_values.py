@@ -6,6 +6,7 @@ event_df = pd.read_csv('./box_process_data/event_data_extended.csv')
 
 # region Create missing values by replacing each cell's value with NaN with a % probability
 random_mask = rand(*event_df.shape)
+random_mask[:,5] = 1 #ensure that no values are deleted from the box column
 #1% chance
 noisy_df1 = event_df.mask(cond=random_mask<0.01, other=nan)
 #2% chance

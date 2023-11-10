@@ -22,7 +22,7 @@ def save_evaluation(db_connection: DatabaseConnection, keystring: str = '', outp
     number of traces containing a DF_BOX relation without a corresponing DF_A relation. Saves the percentage of complete traces, i.e.
     traces where every DF_BOX relation has a corresponing DF_BOX relation.
     '''
-    query_all_traces = '''MATCH (b_all:Box) RETURN count(b_all)'''
+    query_all_traces = '''MATCH (b_all:Box) RETURN count(DISTINCT b_all)'''
     query_incompl_traces = '''MATCH (e1:Event)-[:DF_BOX]->(e2:Event)
     MATCH (e1:Event)-[:OBSERVED]->(a1:Activity)
     MATCH (e2:Event)-[:OBSERVED]->(a2:Activity)
@@ -30,6 +30,10 @@ def save_evaluation(db_connection: DatabaseConnection, keystring: str = '', outp
     MATCH (e1:Event)-[:CORR]->(b_incompl:Box) WHERE (e2:Event)-[:CORR]->(b_incompl:Box)
     RETURN count(DISTINCT b_incompl)
     '''
+    #count boxes which don't have a single corresponding DF_BOX relation
+    query_no_traces = '''MATCH (b_all:Box)
+    MATCH (e:Event)-[:CORR]->(b:Box) WHERE (e)-[:DF_BOX]->(:Event)
+    RETURN count(DISTINCT b_all) - count(DISTINCT b)'''
 
     query_all_dfb = '''MATCH (:Event)-[dfb:DF_BOX]->(:Event) RETURN count(dfb)'''
     query_cor_dfb = '''MATCH (e1:Event)-[dfb:DF_BOX]->(e2:Event)
@@ -40,12 +44,14 @@ def save_evaluation(db_connection: DatabaseConnection, keystring: str = '', outp
 
     all_traces = list(db_connection._exec_query(query_all_traces)[0].values())[0]
     incompl_traces = list(db_connection._exec_query(query_incompl_traces)[0].values())[0]
+    no_traces = list(db_connection._exec_query(query_no_traces)[0].values())[0]
+
 
     all_dfb = list(db_connection._exec_query(query_all_dfb)[0].values())[0]
     cor_dfb = list(db_connection._exec_query(query_cor_dfb)[0].values())[0]
 
     with open(output_path+'result.txt','a') as f:
-        f.write(keystring+': '+str(100-(incompl_traces/all_traces*100))+"%, "+str(cor_dfb/all_dfb*100)+"%, ")
+        f.write(keystring+': '+str(100-((incompl_traces+no_traces)/all_traces*100))+"%, "+str(cor_dfb/all_dfb*100)+"%, ")
 
 
 def save_runtime(start_time: datetime, end_time: datetime, keystring:str = '', output_path:str = '') -> None:
