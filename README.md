@@ -3,7 +3,7 @@ This codebase is a copy+extension of the codebase created by Swevels et al. for 
 
 ## Steps before running:
 ### Installing Neo4J:
-- Install Neo4J Desktop
+- Install Neo4J Desktop and open it
 - Create a new project or select an existing one
 - Create a local DBMS (Select Project->Click 'Add'->Click 'Local DBMS')
 - Select any name, but make sure the password is set to '12345678'
