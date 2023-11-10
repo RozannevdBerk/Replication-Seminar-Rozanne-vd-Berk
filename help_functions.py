@@ -6,6 +6,7 @@ def add_df_a_relations(db_connection: DatabaseConnection, relations: tuple) -> N
     :param db_connection: connection to the neo4j database
     :param relations: nested tuple of the nodes that need to be connected by a df_a relation, order matters
 
+    Adds DF_A relations to the graph database
     '''
     for a1, a2 in relations:
         db_connection._exec_query(f"MATCH (a1:Activity {{name:'{a1}'}}) MATCH (a2:Activity {{name:'{a2}'}}) CREATE (a1)-[:DF_A]->(a2)")
