@@ -1,5 +1,5 @@
 # Replication of the work done by Swevels et al. in "Inferring Missing Entity Identifiers from Context Using Event Knowledge Graphs"
-This codebase is a copy+extension of the codebase created by Swevels et al. for their work (https://github.com/Ava-S/ekg_inference) Contents of their README can be found below.
+This codebase is a copy+extension of the codebase created by Swevels et al. for their work (https://github.com/Ava-S/ekg_inference) Contents of their README can be found below, under the heading 'Using Graph Databases to Infer Missing Case Identifiers in Event Data'
 
 ## Steps before running:
 ### Installing Neo4J:
